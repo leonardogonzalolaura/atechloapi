@@ -28,3 +28,13 @@ jobs:
           **/.ftp-deploy-sync-state.json
       env:
         FTP_DEPLOY_DEBUG: "true" 
+    - name: Install dependencies via SSH (using RSA key)
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: ${{ secrets.SSH_PORT || '22' }}
+        script: |
+          cd ${{ secrets.FTP_DIRECTORY }}
+          npm install --production
