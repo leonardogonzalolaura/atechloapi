@@ -37,7 +37,7 @@ jobs:
         passphrase: ${{ secrets.SSH_PASSPHRASE }} 
         port: ${{ secrets.SSH_PORT || '22' }}
         script: |
-          cd ${{ secrets.FTP_DIRECTORY }}
+          cd 'atechloapi/src/'
           npm install --production
       env:
         SSH_DEBUG: "true" 
