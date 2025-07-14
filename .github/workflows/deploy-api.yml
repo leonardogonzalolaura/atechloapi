@@ -38,3 +38,5 @@ jobs:
         script: |
           cd ${{ secrets.FTP_DIRECTORY }}
           npm install --production
+      env:
+        SSH_DEBUG: "true" 
