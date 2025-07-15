@@ -29,14 +29,12 @@ const swaggerOptions = {
       },
     ],
   },
-  //apis: ['  ./src/routes/*.js'], // Ruta a tus archivos de rutas
   apis: ['./src/routes/*.js']
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+app.use('/api/swaggerUI', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 // Middlewares
 app.use(cors());
@@ -47,7 +45,7 @@ if (process.env.NODE_ENV === 'development') {
 app.use(express.json());
 
 // Rutas
-app.get('/', (req, res) => {
+app.get('/api', (req, res) => {
   res.json({ message: 'API de atechlo.com' });
 });
 
