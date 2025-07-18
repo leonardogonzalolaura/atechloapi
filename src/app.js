@@ -1,48 +1,46 @@
 const express = require('express');
-const swaggerJsdoc = require('swagger-jsdoc');
-const swaggerUi = require('swagger-ui-express');
-const cors = require('cors');
-const helmet = require('helmet');
-const morgan = require('morgan');
 const dotenv = require('dotenv');
+const jwt = require('jsonwebtoken');
+const { swaggerServe, swaggerSetup } = require('./swagger_doc');
+const { applyMiddlewares , authMiddleware } = require('./middlewares');
 
 dotenv.config();
 const app = express();
 
+//========== ADD SWAGGER ============ //
+app.use('/api/swaggerUI', swaggerServe , swaggerSetup );
 
-const swaggerOptions = {
-  definition: {
-    openapi: '3.0.0',
-    info: {
-      title: 'API de ATECHLO',
-      version: '1.0.0',
-      description: 'Documentación de la API de servicios de ATECHLO',
-    },
-    servers: [
-      {
-        url: process.env.NODE_ENV === 'production' 
-          ? process.env.SERVER_URL_PRODUCTION 
-          : process.env.SERVER_URL_LOCAL,
-        description: process.env.NODE_ENV === 'production' 
-          ? 'Servidor de producción' 
-          : 'Servidor local',
-      },
-    ],
-  },
-  apis: ['./src/routes/*.js']
-};
 
-const swaggerSpec = swaggerJsdoc(swaggerOptions);
+//========== ADD MIDDLEWARE ============ //
+applyMiddlewares(app);
 
-app.use('/api/swaggerUI', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Middlewares
-app.use(cors());
-app.use(helmet());
-if (process.env.NODE_ENV === 'development') {
-  app.use(morgan('dev'));
-}
-app.use(express.json());
+app.post('/api/token', (req, res) => {
+  const { user, password } = req.body; 
+
+  // Verificar si se proporcionaron usuario y contraseña
+  if (!user || !password) {
+    return res.status(400).json({ error: 'Usuario y contraseña son requeridos' });
+  }
+  
+  const validUser = process.env.AUTH_USER;
+  const validPassword = process.env.AUTH_PASSWORD;
+
+  if (user !== validUser || password !== validPassword) {
+    return res.status(401).json({ error: 'Credenciales inválidas' });
+  }
+
+  const token = jwt.sign(
+    { id: user }, 
+    process.env.JWT_SECRET, 
+    { expiresIn: '1h' }
+  );
+  
+  res.json({ token });
+});
+
+// Aplicar a las rutas protegidas
+app.use('/api', authMiddleware);
 
 // Rutas
 app.get('/api', (req, res) => {
